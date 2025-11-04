@@ -38,3 +38,21 @@ SELECT column1, column2, column3
 FROM table_name;
 -- Select all columnsSELECT * FROM patients;
 -- Select specific columnsSELECT patient_id, name, age FROM patients;
+```
+
+### Practice Outputs
+
+1. Retrieve all columns from the `patients` table.
+SELECT * FROM patients;
+
+![alt text](image.png)
+
+2. Select only the `patient_id`, `name`, and `age` columns from the `patients` table.
+SELECT patient_id,name,age FROM patients;
+
+![alt text](image-1.png)
+
+3. Display the first 10 records from the `services_weekly` table.
+SELECT TOP 10 * FROM services_weekly;
+
+![alt text](image-2.png)
