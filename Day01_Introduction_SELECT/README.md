@@ -56,3 +56,7 @@ SELECT patient_id,name,age FROM patients;
 SELECT TOP 10 * FROM services_weekly;
 
 ![alt text](image-2.png)
+
+### Daily Challenge Outputs
+
+![alt text](image-3.png)
