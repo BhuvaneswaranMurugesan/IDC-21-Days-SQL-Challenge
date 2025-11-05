@@ -1,4 +1,4 @@
-# 📅 Day 2: Introduction to SQL & SELECT Statement  
+# 📅 Day 2: Filtering Data with WHERE Clause
 📆 Date: 04/11  
 
 ---
