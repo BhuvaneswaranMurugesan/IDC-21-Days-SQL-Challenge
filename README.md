@@ -39,3 +39,5 @@ you can check out installation guides for:
 - [Install SQL Server Express](https://learn.microsoft.com/en-us/sql/sql-server/downloads)
 - [Download SSMS](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms)
 
+### Challenge Link:
+https://indiandataclubsql.notion.site/21-Days-SQL-Challenge-Beginner-Advanced-296b8045661081709ba7d70243e3d518
