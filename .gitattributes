@@ -1,0 +1,15 @@
+# ------------------------------
+# GitHub Linguist Language Detection
+# ------------------------------
+
+# Force detection for SQL files
+*.sql linguist-language=SQL
+
+# Optional: ignore auto-generated or vendor folders from stats
+# (uncomment if you don't want them counted)
+# alembic/versions/* linguist-vendored
+# migrations/* linguist-vendored
+# node_modules/* linguist-vendored
+
+# Treat README as documentation, not code
+README.md linguist-documentation
