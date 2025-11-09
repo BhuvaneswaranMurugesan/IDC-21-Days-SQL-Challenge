@@ -3,7 +3,7 @@
 # ------------------------------
 
 # Force detection for SQL files
-*.sql linguist-language=SQL
+**/*.sql linguist-language=SQL
 
 # Optional: ignore auto-generated or vendor folders from stats
 # (uncomment if you don't want them counted)
