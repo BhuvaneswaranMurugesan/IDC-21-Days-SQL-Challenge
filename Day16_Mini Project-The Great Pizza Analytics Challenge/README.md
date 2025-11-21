@@ -3,6 +3,8 @@
 
 ---
 
+![alt text](image-17.png)
+
 ### Welcome to the **Great Pizza Analytics Challenge**!
 
 You are the data analyst for **IDC Pizza**, tasked with transforming raw pizza sales data into actionable insights.
