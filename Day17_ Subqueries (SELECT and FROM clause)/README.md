@@ -1,5 +1,5 @@
-# 📅 Day 16: Subqueries (WHERE clause)
-📆 Date: 21/11  
+# 📅 Day 17:  Subqueries (SELECT and FROM clause)
+📆 Date: 22/11  
 
 ---
 
