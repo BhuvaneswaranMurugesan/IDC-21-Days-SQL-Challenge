@@ -4,131 +4,135 @@
 ---
 
 ## 🧠 Topics Covered
-- Subqueries in WHERE
-- nested queries
-- filtering with subqueries
+- Subqueries in SELECT
+- derived tables
+- inline views
 
-### 💡 Tips & Tricks
-
-✅ **IN vs EXISTS**:
-- Use IN for small result sets
-- Use EXISTS for better performance with large datasets
-
-✅ **Correlated subqueries** reference outer query:
+✅ **Always alias derived tables**:
 
 ```sql
--- Find patients with above-average satisfaction in their serviceSELECT *FROM patients p1
-WHERE satisfaction > (
-    SELECT AVG(satisfaction)
-    FROM patients p2
-    WHERE p2.service = p1.service  -- References outer query);
+-- ❌ Missing alias: FROM (SELECT ...)-- ✅ Correct: FROM (SELECT ...) AS alias
 ```
 
-✅ **Handle NULLs with NOT IN**:
+✅ **Subquery in SELECT must return single value**:
 
 ```sql
--- NOT IN with NULL returns no rows! Use NOT EXISTS or IS NOT NULLWHERE service NOT IN (SELECT service FROM table WHERE service IS NOT NULL)
+-- This works (single value):SELECT name, (SELECT COUNT(*) FROM staff) AS total_staff
+-- This fails (multiple values):SELECT name, (SELECT staff_name FROM staff)  -- ERROR
 ```
 
-✅ **Single-value subqueries** must return exactly one row:
+✅ **Use derived tables to organize complex logic**:
 
 ```sql
-WHERE age > (SELECT AVG(age) FROM patients)  -- Must return single value
+-- Instead of one massive query, break into logical stepsFROM (
+    -- Step 1: Calculate metrics    SELECT service, COUNT(*) as count FROM patients GROUP BY service
+) AS step1
+JOIN (
+    -- Step 2: Calculate different metrics    SELECT service, AVG(satisfaction) as avg_sat FROM patients GROUP BY service
+) AS step2 ON step1.service = step2.service
 ```
 
-✅ **Test subqueries independently** first to verify they return expected results
+✅ **CTEs (Day 21) are often cleaner** than derived tables for complex queries
 
-✅ **Subqueries in WHERE are evaluated for each row** - can be slow on large datasets
+✅ **Correlated subqueries in SELECT** execute once per row (can be slow):
+
+```python
+SELECT
+    p.name,
+    (SELECT AVG(satisfaction)
+     FROM patients p2
+     WHERE p2.service = p.service) AS service_avg  -- Runs for each patientFROM patients p;
+```
 
 ### Basic Syntax
 
 ```sql
-SELECT columnsFROM table1
-WHERE column IN (
-    SELECT column    FROM table2
-    WHERE condition
-);
+-- Subquery in SELECTSELECT
+    column1,
+    (SELECT aggregate FROM table2 WHERE condition) AS calculated_column
+FROM table1;
+-- Subquery in FROM (derived table)SELECT *FROM (
+    SELECT column1, column2
+    FROM table    WHERE condition
+) AS subquery_alias;
 ```
 
 ### Practice Outputs
 
-1. Find patients who are in services with above-average staff count.
-SELECT *
-FROM (
-    SELECT p.name,p.service,COUNT(s.staff_id) AS [Staff Count]
-	FROM dbo.patients p
-	JOIN dbo.services_weekly sw ON sw.service = p.service
-	JOIN dbo.staff s ON s.service = p.service
-		GROUP BY p.service, p.name
-) AS Staffdetails 
-WHERE Staffdetails.[Staff Count] > (
-        SELECT AVG(staff_count_value)
-        FROM (
-            SELECT COUNT(staff_id) AS staff_count_value
-            FROM dbo.staff
-            GROUP BY service
-        ) AS result
-      );
+1. Show each patient with their service's average satisfaction as an additional column.
+SELECT
+	p.patient_id,
+	p.name as [Patient Name],
+	patient_sat.service,
+	patient_sat.[Avg Satisfaction]
+FROM
+dbo.patients p
+LEFT JOIN (SELECT 
+		service,AVG(patient_satisfaction) as [Avg Satisfaction]
+	FROM dbo.services_weekly
+	GROUP BY service) as patient_sat
+	ON p.service = patient_sat.service
 
 ![alt text](image.png)
 
 NOTE: Because of data discrepancies, the output is not accurate.
 
-2. List staff who work in services that had any week with patient satisfaction below 70.
-SELECT 
-    sw.week,
-    sw.service,
-    sw.patient_satisfaction,
-    s.staff_name
-FROM dbo.services_weekly sw
-JOIN dbo.staff s 
-      ON sw.service = s.service
-WHERE sw.patient_satisfaction < 70
-  AND EXISTS (
-        SELECT 1
-        FROM dbo.staff st
-        WHERE st.service = sw.service
-    );
+2. Create a derived table of service statistics and query from it.
+SELECT
+	*
+FROM 
+	(SELECT 
+		service,
+		AVG(patient_satisfaction) AS [AVG Patient Satisfaction],
+		AVG(patients_admitted) AS [AVG Patients Admitted],
+		AVG(patients_refused) AS [AVG Patients Refused]
+	FROM dbo.services_weekly
+	GROUP BY service
+	) AS service_statistics
 
 ![alt text](image-1.png)
 
 NOTE: Not Joined based on staff_id Because of data discrepancies, the output is not accurate.
 
-3. Show patients from services where total admitted patients exceed 1000.
-SELECT * FROM
+3. Display staff with their service's total patient count as a calculated field.
+
+SELECT
+	staff_statistics.staff_name,
+	staff_statistics.service,
+	COUNT(p.patient_id) as [Total patient count]
+FROM 
 	(SELECT 
-		p.service,
-		p.name,
-		SUM(sw.patients_admitted) as [Total Admitted patients]
-	FROM dbo.patients p
-	JOIN dbo.services_weekly sw ON p.service = sw.service
-	GROUP BY p.name,p.service) 
-as patient_info 
-WHERE patient_info.[Total Admitted patients]>1000
-ORDER BY patient_info.[Total Admitted patients] DESC
+		staff_name,service
+	FROM dbo.staff
+	) AS staff_statistics
+JOIN dbo.patients p ON p.service=staff_statistics.service
+GROUP BY staff_statistics.staff_name,staff_statistics.service
 
 ![alt text](image-2.png)
 
 NOTE: Because of data discrepancies, the output is not accurate.
 
 ### Daily Challenge Outputs
-/*
-Question: Find all patients who were admitted to services that had at least one week where patients were refused 
-AND the average patient satisfaction for that service was below the overall hospital average satisfaction.
-Show patient_id, name, service, and their personal satisfaction score.
-*/
-SELECT DISTINCT * FROM
-	(
-	SELECT 
-		p.patient_id,
-		p.name,p.service,
-		p.satisfaction as [Personal Satisfaction],
-		(SELECT AVG(patient_satisfaction) FROM dbo.services_weekly) as avg_satisfaction
+
+Question: Create a report showing each service with: service name, total patients admitted,
+the difference between their total admissions and the average admissions across all services,
+and a rank indicator ('Above Average', 'Average', 'Below Average'). Order by total patients admitted descending.
+
+SELECT 
+	*,
+	CASE 
+		WHEN [Total Admission diffrence] > ([AVG admissions Per Service])
+		THEN 'Above Average' WHEN [Total Admission diffrence] < ([AVG admissions Per Service])
+		THEN 'Below Average' ELSE 'Average'
+	END AS [Rank]
+FROM
+	(SELECT 
+		sw.service,SUM(sw.patients_admitted) as [Total admissions Per Service],
+		AVG(sw.patients_admitted) as [AVG admissions Per Service],
+		(SELECT SUM(sw.patients_admitted) FROM dbo.services_weekly sw)-SUM(sw.patients_admitted) as [Total Admission diffrence]
 	FROM dbo.services_weekly sw
-	JOIN dbo.patients p ON p.service = sw.service
-	WHERE sw.patients_refused <> 0 AND
-	(SELECT AVG(patient_satisfaction) FROM dbo.services_weekly) > p.satisfaction
-	) AS result
+	GROUP BY sw.service) as Admission_stats
+ORDER BY Admission_stats.[Total admissions Per Service] DESC
 
 ![alt text](image-3.png)
 
