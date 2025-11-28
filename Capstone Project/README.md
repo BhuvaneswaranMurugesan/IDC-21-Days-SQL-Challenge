@@ -20,7 +20,8 @@ Your mission is simple but challenging:
 
 👉 **Find out who the killer is, where and when the crime took place, and how it happened — using only SQL queries.**
 
-1. Someone entered the CEO’s office around the time of the crime.
+
+👉 1. Someone entered the CEO’s office around the time of the crime.
 
 SELECT * FROM dbo.keycard_logs kl
 JOIN dbo.employees e ON e.employee_id = kl.employee_id
