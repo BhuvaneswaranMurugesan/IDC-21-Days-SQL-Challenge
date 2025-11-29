@@ -29,4 +29,24 @@ WHERE exit_time <= '2025-10-15 21:00:00' and room = 'CEO Office'
 
 ![alt text](image.png)
 
-2. 
+👉 2. There was a suspicious call shortly before the crime.
+
+WITH Caller_id AS(
+	SELECT * FROM dbo.calls c
+	JOIN dbo.employees e ON e.employee_id = c.caller_id
+	WHERE call_time <= '2025-10-15 21:00:00' and call_time >= '2025-10-15 20:00:00'
+	),
+Receiver_id AS(
+	SELECT call_id,name,department,role FROM dbo.calls c
+	JOIN dbo.employees e ON e.employee_id = c.receiver_id
+	WHERE call_time <= '2025-10-15 21:00:00' and call_time >= '2025-10-15 20:00:00'
+)
+SELECT ci.*,
+	ri.*
+FROM Caller_id ci
+JOIN Receiver_id ri ON ci.call_id=ri.call_id
+
+![alt text](image-1.png)
+
+
+
