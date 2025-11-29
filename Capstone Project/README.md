@@ -22,15 +22,15 @@ Your mission is simple but challenging:
 
 
 👉 1. Someone entered the CEO’s office around the time of the crime.
-
+```sql
 SELECT * FROM dbo.keycard_logs kl
 JOIN dbo.employees e ON e.employee_id = kl.employee_id
 WHERE exit_time <= '2025-10-15 21:00:00' and room = 'CEO Office'
-
+```
 ![alt text](image.png)
 
 👉 2. There was a suspicious call shortly before the crime.
-
+```sql
 WITH Caller_id AS(
 	SELECT * FROM dbo.calls c
 	JOIN dbo.employees e ON e.employee_id = c.caller_id
@@ -45,25 +45,26 @@ SELECT ci.*,
 	ri.*
 FROM Caller_id ci
 JOIN Receiver_id ri ON ci.call_id=ri.call_id
-
+```
 ![alt text](image-1.png)
 
 👉 3. Someone may have lied about their location.
-
+```sql
 SELECT 
 	*
 FROM dbo.alibis a
 JOIN employees e ON a.employee_id = e.employee_id
-
+```
 ![alt text](image-2.png)
 
 👉 4. Physical evidence was discovered at the scene.
-
+```sql
 SELECT * FROM dbo.evidence
-
+```
 ![alt text](image-3.png)
 
 Overall Investigation:
+```sql
 WITH Investigation_1 AS(
 	SELECT kl.*,e.name,e.department,e.role
 	FROM dbo.keycard_logs kl
@@ -102,10 +103,10 @@ JOIN Receiver_id ri ON ci.call_id=ri.call_id
 JOIN Investigation_1 I1 ON I1.employee_id = ci.caller_id or I1.employee_id = ri.receiver_id
 JOIN Lied_about_location lal ON I1.employee_id = lal.employee_id
 JOIN Evidence e ON e.room = lal.claimed_location or e.room = I1.room
-
+```
 ![alt text](image-4.png)
 
-Investigation conclusion:
+ ## ** Investigation conclusion:**
 
 During the investigation, I reviewed all access logs, timestamps, and evidence records. Every log showed that David Kumar was present in the restricted area exactly during the incident window. All collected evidence — including fingerprints, mismatched keycard activity, and unusual access patterns — was tied directly to him. No other individual appeared in any of the logs or evidence entries. Since the suspect’s movements, timing, and physical evidence all aligned without contradiction, the conclusion pointed clearly toward David Kumar as the responsible person.
 
